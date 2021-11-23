@@ -13,7 +13,7 @@ type templateData struct {
 	IntMap          map[string]int
 	FloatMap        map[string]float32
 	Data            map[string]interface{}
-	CSFRToken       string
+	CSRFToken       string
 	Flash           string
 	Warning         string
 	Error           string
@@ -24,23 +24,19 @@ type templateData struct {
 
 var functions = template.FuncMap{}
 
-// go:embed templates
-
+//go:embed templates
 var templateFS embed.FS
 
-// this will use to add any info we need from templateData struct
+
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
 	return td
 }
 
-func (app *application) RenderTemplate(w http.ResponseWriter, r *http.Request, page string, td *templateData, partials ...string) error {
+func (app *application) renderTemplate(w http.ResponseWriter, r *http.Request, page string, td *templateData, partials ...string) error {
 	var t *template.Template
 	var err error
-
-	// build our template to render
 	templateToRender := fmt.Sprintf("templates/%s.page.html", page)
 
-	//Now lets check if templateCache exist
 	_, templateInMap := app.templateCache[templateToRender]
 
 	if app.config.env == "production" && templateInMap {
@@ -48,28 +44,30 @@ func (app *application) RenderTemplate(w http.ResponseWriter, r *http.Request, p
 	} else {
 		t, err = app.parseTemplate(partials, page, templateToRender)
 		if err != nil {
+			app.errorLog.Println(err)
 			return err
 		}
 	}
-	// build out template data 
+
 	if td == nil {
 		td = &templateData{}
 	}
+
 	td = app.addDefaultData(td, r)
 
-   //Execute the template 
-   err = t.Execute(w, td)
-   if err != nil {
-	   app.errorLog.Println(err)
-	   panic(err)
-   }
+	err = t.Execute(w, td)
+	if err != nil {
+		app.errorLog.Println(err)
+		return err
+	}
+
 	return nil
 }
 
 func (app *application) parseTemplate(partials []string, page, templateToRender string) (*template.Template, error) {
-	var err error
 	var t *template.Template
-
+	var err error
+	
 	// build partials
 	if len(partials) > 0 {
 		for i, x := range partials {
@@ -78,13 +76,11 @@ func (app *application) parseTemplate(partials []string, page, templateToRender 
 	}
 
 	if len(partials) > 0 {
-		t, err = template.New(fmt.Sprintf("%s.page.html", page)).Funcs(functions).ParseFS(templateFS, "template/base.layout.html", strings.Join(partials, ","), templateToRender)
-		if err != nil {
-			app.errorLog.Println(err)
-			return nil, err
-		}
+		t, err = template.New(fmt.Sprintf("%s.page.html", page)).Funcs(functions).ParseFS(templateFS, "templates/base.layout.html", strings.Join(partials, ","), templateToRender)
 	} else {
-		t, err = template.New(fmt.Sprintf("%s.page.html", page)).Funcs(functions).ParseFS(templateFS, "template/base.layout.html", templateToRender)
+		t, err = template.New(fmt.Sprintf("%s.page.html", page)).Funcs(functions).ParseFS(templateFS, "templates/base.layout.html", templateToRender)
+	}
+	if err != nil {
 		app.errorLog.Println(err)
 		return nil, err
 	}
