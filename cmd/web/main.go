@@ -59,7 +59,7 @@ func main() {
 	
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen om")
 	flag.StringVar(&cfg.env, "env", "development", "Application enviroment {developement |  production")
-	flag.StringVar(&cfg.api, "api", "http://localhost:4001", "URL to api")
+	flag.StringVar(&cfg.api, "api", "http://localhost:4001/api/payment-intent", "URL to api")
 
 	flag.Parse()
 
