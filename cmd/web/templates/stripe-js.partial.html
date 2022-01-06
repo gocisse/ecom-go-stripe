@@ -11,7 +11,9 @@ const processing = document.getElementById("processing-payment");
 
 // stripe = Stripe('pk_test_51Jy8V0IMUiogyWyk5RUjwjiIkfO77XWndSuVMyGbMzYEE9tCWlwaZXlwLBfqMDao3Pb0XqtdDuTZqjOAPJq3iXcv00uIXVAwdh');
 
-stripe = Stripe("{{index .StringMap "publishable_key"}}");
+// stripe = Stripe("{{index .StringMap "publishable_key"}}");
+
+stripe = Stripe({{.StripePublishableKey}})
 
 function hidePayButton() {
     payButton.classList.add("d-none");

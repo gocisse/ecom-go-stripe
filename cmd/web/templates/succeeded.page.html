@@ -7,11 +7,13 @@
 {{define "content"}}
     <h2 class="mt-5">Payment Succeeded</h2>
     <hr>
+    {{$price := index .Data "pa"}}
+
 
     <p>Payment Intent: {{ index .Data "pi"}} </p>
     <p>CardHolder: {{ index .Data "cardholder"}} </p>
     <p>Email: {{ index .Data "email"}} </p>
     <p>Payment Method: {{ index .Data "pm"}} </p>
-    <p>Payment Amount: {{ index .Data "pa"}} </p>
+    <p>Payment Amount: {{ formatCurrency  $price }} </p>
     <p>Payment Currency: {{ index .Data "pc"}} </p>
 {{end}}
