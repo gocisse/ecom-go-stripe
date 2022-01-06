@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/gocisse/ecom-go-stripe/internal/models"
+)
 
 func (app *application) VirtualTerminal(w http.ResponseWriter, r *http.Request) {
 	stringMap := make(map[string]string)
@@ -32,7 +36,7 @@ func (app *application) succeededPayment(w http.ResponseWriter, r *http.Request)
 		paymentcurrency = r.Form.Get("payment_currency")
 	)
 	data := make(map[string]interface{})
-	
+
 	data["cardholder"] = cardholder
 	data["email"] = email
 	data["pi"] = paymentintent
@@ -49,12 +53,24 @@ func (app *application) succeededPayment(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-// Display a page to buy one widgets 
-func(app *application)ChargeOnce(w http.ResponseWriter, r *http.Request) {
+// Display a page to buy one widgets
+func (app *application) ChargeOnce(w http.ResponseWriter, r *http.Request) {
 	stringMap := make(map[string]string)
 	stringMap["publishable_key"] = app.config.stripe.key
+
+	widget := models.Widget{
+		ID:             1,
+		Name:           "Custom Widget",
+		Description:    "A very nice widget",
+		InventoryLevel: 10,
+		Price:          1000,
+	}
+	data := make(map[string]interface{})
+	data["widget"] = widget
+
 	if err := app.renderTemplate(w, r, "buy-once", &templateData{
 		StringMap: stringMap,
+		Data:      data,
 	}, "stripe-js"); err != nil {
 		app.errorLog.Println(err)
 		return
