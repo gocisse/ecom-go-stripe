@@ -20,6 +20,6 @@ func (app *application) route() http.Handler {
 		MaxAge: 300,
 	}))
 	mux.Post("/api/payment-intent", app.GetPaymentIntent)
-
+	mux.Get("/api/widget/{id}", app.GetWidgetByID)
 	return mux
 }

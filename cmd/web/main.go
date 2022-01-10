@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gocisse/ecom-go-stripe/internal/drivers"
+	"github.com/gocisse/ecom-go-stripe/internal/models"
 )
 
 const version = "1.0.0"
@@ -40,16 +41,17 @@ type application struct {
 	errorLog      *log.Logger
 	templateCache map[string]*template.Template
 	version       string
+	DB            models.DBModel
 }
 
 func (app *application) serve() error {
 	srv := &http.Server{
-		Addr:        fmt.Sprintf(":%d", app.config.port),
-		Handler:     app.route(),
-		IdleTimeout: 30 * time.Second,
-		ReadTimeout: 10 * time.Second,
+		Addr:              fmt.Sprintf(":%d", app.config.port),
+		Handler:           app.route(),
+		IdleTimeout:       30 * time.Second,
+		ReadTimeout:       10 * time.Second,
 		ReadHeaderTimeout: 5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		WriteTimeout:      5 * time.Second,
 	}
 	app.infoLog.Printf("Starting HTTP server in %s mode on port %d", app.config.env, app.config.port)
 
@@ -58,11 +60,11 @@ func (app *application) serve() error {
 
 func main() {
 	var cfg config
-	
+
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen om")
 	flag.StringVar(&cfg.env, "env", "development", "Application enviroment {developement |  production")
 	flag.StringVar(&cfg.api, "api", "http://localhost:4001/api/payment-intent", "URL to api")
-	flag.StringVar(&cfg.db.dsn, "dsn", "root:root123@tcp(127.0.0.1:3306)/widgets?parseTime=true&tls=false", "DSN" )
+	flag.StringVar(&cfg.db.dsn, "dsn", "root:root123@tcp(127.0.0.1:3306)/widgets?parseTime=true&tls=false", "DSN")
 
 	flag.Parse()
 
@@ -80,23 +82,23 @@ func main() {
 
 	defer conn.Close()
 
-
 	// make template cache
 	tc := make(map[string]*template.Template)
 
 	app := &application{
-		config:   cfg,
-		infoLog:  infoLog,
-		errorLog: errorLog,
+		config:        cfg,
+		infoLog:       infoLog,
+		errorLog:      errorLog,
 		templateCache: tc,
-		version:  version,
+		version:       version,
+		DB: models.DBModel{
+			DB: conn,
+		},
 	}
 
-	
-	
 	err = app.serve()
 	if err != nil {
-		
+
 		app.errorLog.Println(err)
 		panic(err)
 	}

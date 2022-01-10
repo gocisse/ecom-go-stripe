@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/gocisse/ecom-go-stripe/internal/cards"
 )
 
@@ -29,13 +30,12 @@ func (app *application) GetPaymentIntent(w http.ResponseWriter, r *http.Request)
 		app.errorLog.Println(err)
 		return
 	}
-	
+
 	amount, err := strconv.Atoi(payload.Amount)
 	if err != nil {
 		app.errorLog.Println(err)
 		return
 	}
-
 
 	var card = cards.Card{
 		Secret:   app.config.stripe.secret,
@@ -70,5 +70,26 @@ func (app *application) GetPaymentIntent(w http.ResponseWriter, r *http.Request)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(out)
 	}
+
+}
+
+func (app *application) GetWidgetByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	wigetID, err := strconv.Atoi(id)
+	if err != nil {
+		app.errorLog.Println(err)
+	}
+
+	widget, err := app.DB.GetWidget(wigetID)
+	if err != nil {
+		app.errorLog.Println(err)
+	}
+	out, err := json.MarshalIndent(widget, "", "   ")
+	if err != nil {
+		app.errorLog.Println(err)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
 
 }

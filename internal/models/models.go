@@ -1,6 +1,10 @@
 package models
 
-import "database/sql"
+import (
+	"context"
+	"database/sql"
+	"time"
+)
 
 // DBModels is the type for a database connections values
 
@@ -33,4 +37,19 @@ type Widget struct {
 	Price          int    `json:"price"`
 	CeatedAt       int    `json:"-"`
 	UpdatedAt      int    `json:"-"`
+}
+//function to get one widget item from the database
+func (m *DBModel) GetWidget(id int) (Widget, error) {
+	var widget Widget
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	row := m.DB.QueryRowContext(ctx, "select id, name from widgets where id = ?", id)
+	err := row.Scan(&widget.ID, &widget.Name)
+	if err != nil {
+		return widget, err
+	}
+
+	return widget, err
 }
